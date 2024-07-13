@@ -4,6 +4,8 @@ except ModuleNotFoundError:
     from db.connection.conn import Connection
 import pandas as pd
 
+# from sqlalchemy.orm import sessionmaker
+
 
 def start_connection():
     conn = Connection()
@@ -12,19 +14,35 @@ def start_connection():
 
 def select_all_from_cliente():
     conn = start_connection()
-    table = pd.read_sql_query("SELECT * FROM CLIENTE", con=conn.connection)
+    table = pd.read_sql_query(
+        "SELECT NOME_CLIENTE 'NOME DO CLIENTE', TELEFONE_CLIENTE 'TELEFONE DO CLIENTE', RUA, BAIRRO, NUMERO FROM CLIENTE",
+        con=conn.connection,
+    )
     print(table)
 
 
 def select_all_from_pet():
     conn = start_connection()
-    table = pd.read_sql_query("SELECT * FROM PET", con=conn.connection)
+    table = pd.read_sql_query(
+        """
+SELECT C.NOME_CLIENTE 'NOME DO CLIENTE', C.TELEFONE_CLIENTE 'TELEFONE DO CLIENTE' , P.NOME_PET 'NOME DO PET', RACA_PET 'RAÇA DO PET' FROM PET P
+JOIN CLIENTE C ON C.ID_CLIENTE = P.FK_CLIENTE_ID_CLIENTE
+ORDER BY C.ID_CLIENTE ASC""",
+        con=conn.connection,
+    )
     print(table)
 
 
 def select_all_from_venda():
     conn = start_connection()
-    table = pd.read_sql_query("SELECT * FROM VENDA", con=conn.connection)
+    table = pd.read_sql_query(
+        """
+SELECT V.TIPO_VENDA 'TIPO DE VENDA', V.DATA_VENDA 'DATA DA VENDA', C.NOME_CLIENTE 'NOME DO CLIENTE', P.NOME_PET 'NOME DO PET' FROM VENDA V
+JOIN CLIENTE C ON V.FK_CLIENTE_ID_CLIENTE = C.ID_CLIENTE
+JOIN PET P ON P.ID_PET = V.FK_PET_ID_PET
+ORDER BY ID_VENDA ASC""",
+        con=conn.connection,
+    )
     print(table)
 
 
@@ -117,8 +135,9 @@ WHERE P.NOME_PET = '{nome_pet}'
 def insert_cliente(
     nome_cliente: str, telefone_cliente: str, rua: str, bairro: str, numero: int
 ):
-    conn = start_connection()
-    cursor = conn.connection.cursor()
+    engine = start_connection().connection
+    connection = engine.raw_connection()
+    cursor = connection.cursor()
     try:
         cursor.execute(
             f"""
@@ -134,8 +153,9 @@ def insert_cliente(
 
 
 def insert_pet(nome_pet: str, raca_pet: str, nome_cliente: str):
-    conn = start_connection()
-    cursor = conn.connection.cursor()
+    engine = start_connection().connection
+    connection = engine.raw_connection()
+    cursor = connection.cursor()
     try:
         cursor.execute(
             f"""
@@ -144,7 +164,24 @@ def insert_pet(nome_pet: str, raca_pet: str, nome_cliente: str):
         """
         )
         cursor.commit()
+
         print("Pet inserido com sucesso!")
     except TypeError as e:
         print(f"Erro ao inserir pet: {e}")
-        cursor.rollback()
+
+
+def insert_venda(tipo_venda: str, nome_cliente: str, nome_pet: str):
+    engine = start_connection().connection
+    connection = engine.raw_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            f"""
+        INSERT INTO VENDA (TIPO_VENDA, FK_CLIENTE_ID_CLIENTE, FK_PET_ID_PET)
+        VALUES('{tipo_venda}', (SELECT ID_CLIENTE FROM CLIENTE WHERE NOME_CLIENTE = '{nome_cliente}'), (SELECT ID_PET FROM PET WHERE NOME_PET = '{nome_pet}'))
+        """
+        )
+        cursor.commit()
+        print("Venda inserida com Sucesso!")
+    except TypeError as e:
+        print(f"Erro ao inserir venda: {e}")

@@ -1,5 +1,6 @@
 import pyodbc
 from dotenv import load_dotenv
+import sqlalchemy as sa
 import os
 
 load_dotenv()
@@ -17,14 +18,17 @@ class Connection:
 
     @property
     def connection(self):
-        conn = pyodbc.connect(
-            f"Driver={self.driver};"
-            f"Server={self.server},{self.port};"
-            f"Database={self.db};"
-            f"TrustServerCertificate={self.certificate};"
-            f"UID={self.uid};"
-            f"PWD={self.pwd};"
+        conn = sa.create_engine(
+            f"mssql+pyodbc://{self.uid}:{self.pwd}@{self.server}:{self.port}/{self.db}?TrustServerCertificate={self.certificate}&driver=ODBC+Driver+18+for+SQL+Server"
         )
+        # old_conn = pyodbc.connect(
+        #     f"Driver={self.driver};"
+        #     f"Server={self.server},{self.port};"
+        #     f"Database={self.db};"
+        #     f"TrustServerCertificate={self.certificate};"
+        #     f"UID={self.uid};"
+        #     f"PWD={self.pwd};"
+        # )
         if conn:
             print("Connection successful")
             return conn
