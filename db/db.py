@@ -3,6 +3,7 @@ try:
 except ModuleNotFoundError:
     from db.connection.conn import Connection
 import pandas as pd
+import json
 
 # from sqlalchemy.orm import sessionmaker
 
@@ -18,7 +19,10 @@ def select_all_from_cliente():
         "SELECT NOME_CLIENTE 'NOME DO CLIENTE', TELEFONE_CLIENTE 'TELEFONE DO CLIENTE', RUA, BAIRRO, NUMERO FROM CLIENTE",
         con=conn.connection,
     )
+    json_table = table.to_json()
     print(table)
+
+    return json_table
 
 
 def select_all_from_pet():
@@ -30,7 +34,10 @@ JOIN CLIENTE C ON C.ID_CLIENTE = P.FK_CLIENTE_ID_CLIENTE
 ORDER BY C.ID_CLIENTE ASC""",
         con=conn.connection,
     )
+    json_table = table.to_json(orient="records")
     print(table)
+
+    return json_table
 
 
 def select_all_from_venda():
@@ -43,7 +50,10 @@ JOIN PET P ON P.ID_PET = V.FK_PET_ID_PET
 ORDER BY ID_VENDA ASC""",
         con=conn.connection,
     )
+    json_table = table.to_json()
     print(table)
+
+    return json_table
 
 
 def select_cliente_pet():
@@ -129,6 +139,7 @@ WHERE P.NOME_PET = '{nome_pet}'
 """,
         con=conn.connection,
     )
+
     print(table)
 
 
