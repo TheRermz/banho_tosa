@@ -16,10 +16,12 @@ def start_connection():
 def select_all_from_cliente():
     conn = start_connection()
     table = pd.read_sql_query(
-        "SELECT NOME_CLIENTE 'NOME DO CLIENTE', TELEFONE_CLIENTE 'TELEFONE DO CLIENTE', RUA, BAIRRO, NUMERO FROM CLIENTE",
+        "SELECT ID_CLIENTE, NOME_CLIENTE, TELEFONE_CLIENTE, RUA, BAIRRO, NUMERO FROM CLIENTE",
         con=conn.connection,
     )
-    json_table = table.to_json()
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
 
     return json_table
@@ -29,12 +31,14 @@ def select_all_from_pet():
     conn = start_connection()
     table = pd.read_sql_query(
         """
-SELECT C.NOME_CLIENTE 'NOME DO CLIENTE', C.TELEFONE_CLIENTE 'TELEFONE DO CLIENTE' , P.NOME_PET 'NOME DO PET', RACA_PET 'RAÇA DO PET' FROM PET P
+SELECT P.ID_PET, C.NOME_CLIENTE, C.TELEFONE_CLIENTE  , P.NOME_PET , RACA_PET  FROM PET P
 JOIN CLIENTE C ON C.ID_CLIENTE = P.FK_CLIENTE_ID_CLIENTE
-ORDER BY C.ID_CLIENTE ASC""",
+""",
         con=conn.connection,
     )
-    json_table = table.to_json(orient="records")
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
 
     return json_table
@@ -44,13 +48,15 @@ def select_all_from_venda():
     conn = start_connection()
     table = pd.read_sql_query(
         """
-SELECT V.TIPO_VENDA 'TIPO DE VENDA', V.DATA_VENDA 'DATA DA VENDA', C.NOME_CLIENTE 'NOME DO CLIENTE', P.NOME_PET 'NOME DO PET' FROM VENDA V
+SELECT V.ID_VENDA ,V.TIPO_VENDA , V.DATA_VENDA , C.NOME_CLIENTE , P.NOME_PET  FROM VENDA V
 JOIN CLIENTE C ON V.FK_CLIENTE_ID_CLIENTE = C.ID_CLIENTE
 JOIN PET P ON P.ID_PET = V.FK_PET_ID_PET
 ORDER BY ID_VENDA ASC""",
         con=conn.connection,
     )
-    json_table = table.to_json()
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
 
     return json_table
@@ -67,7 +73,12 @@ JOIN PET P ON P.FK_CLIENTE_ID_CLIENTE = C.ID_CLIENTE
 """,
         con=conn.connection,
     )
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
+
+    return json_table
 
 
 def select_cliente_by_nome(nome: str):
@@ -79,7 +90,12 @@ ON P.FK_CLIENTE_ID_CLIENTE = C.ID_CLIENTE WHERE NOME_CLIENTE = '{nome}'
 """,
         con=conn.connection,
     )
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
+
+    return json_table
 
 
 def select_cliente_by_pet(nome_pet: str):
@@ -93,21 +109,31 @@ WHERE NOME_PET = '{nome_pet}'
 """,
         con=conn.connection,
     )
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
+
+    return json_table
 
 
 def select_pet_by_nome_cliente(nome_cliente: str):
     conn = start_connection()
     table = pd.read_sql_query(
         f"""
-SELECT C.NOME_CLIENTE, C.TELEFONE_CLIENTE, C.RUA, C.BAIRRO, C.NUMERO, P.NOME_PET FROM CLIENTE C
+SELECT  C.NOME_CLIENTE, C.TELEFONE_CLIENTE, C.RUA, C.BAIRRO, C.NUMERO, P.NOME_PET FROM CLIENTE C
 JOIN PET P
 ON P.FK_CLIENTE_ID_CLIENTE = C.ID_CLIENTE
 WHERE C.NOME_CLIENTE = '{nome_cliente}'
 """,
         con=conn.connection,
     )
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
+
+    return json_table
 
 
 def select_venda_by_cliente(nome_cliente: str):
@@ -123,7 +149,12 @@ WHERE C.NOME_CLIENTE = '{nome_cliente}'
 """,
         con=conn.connection,
     )
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
+
+    return json_table
 
 
 def select_venda_by_pet(nome_pet: str):
@@ -140,12 +171,18 @@ WHERE P.NOME_PET = '{nome_pet}'
         con=conn.connection,
     )
 
+    new_table = table.to_dict()
+    df = pd.DataFrame(new_table)
+    json_table = df.to_json(orient="records")
     print(table)
+
+    return json_table
 
 
 def insert_cliente(
     nome_cliente: str, telefone_cliente: str, rua: str, bairro: str, numero: int
 ):
+
     engine = start_connection().connection
     connection = engine.raw_connection()
     cursor = connection.cursor()
@@ -157,10 +194,12 @@ def insert_cliente(
         """
         )
         cursor.commit()
-        print("Cliente inserido com sucesso!")
+        return "Cliente inserido com sucesso!"
     except TypeError as e:
-        print(f"Erro ao inserir cliente: {e}")
         cursor.rollback()
+        return f"Erro ao inserir cliente: {e}"
+    except KeyError as e:
+        return f"Erro ao inserir cliente: {e}"
 
 
 def insert_pet(nome_pet: str, raca_pet: str, nome_cliente: str):
@@ -176,9 +215,11 @@ def insert_pet(nome_pet: str, raca_pet: str, nome_cliente: str):
         )
         cursor.commit()
 
-        print("Pet inserido com sucesso!")
+        return "Pet inserido com sucesso!"
     except TypeError as e:
-        print(f"Erro ao inserir pet: {e}")
+        return f"Erro ao inserir pet: {e}"
+    except KeyError as e:
+        return f"Erro ao inserir pet: {e}"
 
 
 def insert_venda(tipo_venda: str, nome_cliente: str, nome_pet: str):
@@ -193,6 +234,8 @@ def insert_venda(tipo_venda: str, nome_cliente: str, nome_pet: str):
         """
         )
         cursor.commit()
-        print("Venda inserida com Sucesso!")
+        return "Venda inserida com sucesso!"
     except TypeError as e:
-        print(f"Erro ao inserir venda: {e}")
+        return f"Erro ao inserir venda: {e}"
+    except KeyError as e:
+        return f"Erro ao inserir venda: {e}"
