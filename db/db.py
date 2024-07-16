@@ -3,9 +3,6 @@ try:
 except ModuleNotFoundError:
     from db.connection.conn import Connection
 import pandas as pd
-import json
-
-# from sqlalchemy.orm import sessionmaker
 
 
 def start_connection():
