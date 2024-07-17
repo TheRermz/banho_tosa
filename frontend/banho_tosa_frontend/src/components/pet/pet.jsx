@@ -1,6 +1,7 @@
 import "./pet.css";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const Cliente = () => {
   const [pet, setPet] = useState([]);
@@ -25,6 +26,7 @@ const Cliente = () => {
 
   return (
     <div className="pet">
+      <Link to="/pet/adicionar">Adicionar Pet</Link>
       <h1>PET</h1>
       <table>
         <thead>

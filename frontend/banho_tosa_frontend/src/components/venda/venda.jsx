@@ -1,6 +1,7 @@
 import "./venda.css";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const Cliente = () => {
   const [venda, setVenda] = useState([]);
@@ -25,6 +26,7 @@ const Cliente = () => {
 
   return (
     <div className="venda">
+      <Link to="/venda/adicionar">Adicionar venda</Link>
       <h1>VENDA</h1>
       <table>
         <thead>

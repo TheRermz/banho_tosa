@@ -1,14 +1,10 @@
 import "./cliente.css";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const Cliente = () => {
   const [clientes, setClientes] = useState([]);
-  //   const [nome, setNome] = useState("");
-  //   const [telefone, setTelefone] = useState("");
-  //   const [rua, setRua] = useState("");
-  //   const [bairro, setBairro] = useState("");
-  //   const [numero, setNumero] = useState("");
 
   const fetchAPI = async () => {
     const response = await axios.get("http://localhost:8080/api/cliente");
@@ -30,6 +26,7 @@ const Cliente = () => {
 
   return (
     <div className="cliente">
+      <Link to="/cliente/adicionar">Adicionar cliente</Link>
       <h1>Lista de Clientes</h1>
       <table>
         <thead>
